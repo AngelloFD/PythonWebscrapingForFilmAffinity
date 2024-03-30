@@ -111,38 +111,39 @@ def get_reviews(shows):
         while True:
             url = f"https://www.filmaffinity.com/es/reviews/{page_number}/{show}.html"
             page = get(url)
-            soup = BeautifulSoup(page.content, "html.parser")
-            reviews = soup.find_all("div", class_="review-text1")
-            ratings = soup.find_all("div", class_="user-reviews-movie-rating")
-            genres_element = soup.find("span", class_="genres")
-            genres = (
-                [a.text for a in genres_element.find_all("a")] if genres_element else []
-            )
-            for review, rating in zip(reviews, ratings):
-                review_text = remove_accents(review.text.strip())
-                if review_text:
-                    print(
-                        f"Show ID: {show}, Review: {review_text}, Rating: {rating.text.strip()}"
-                    )
-                    data.append(
-                        {
-                            "metadata": {
-                                "source": "FilmAffinity",
-                                "timestamp": datetime.now().isoformat(),
-                                "format": "JSON",
-                                "tags": ["review"] + genres,
-                            },
-                            "Show ID": show,
-                            "Review": review_text,
-                            "Rating": rating.text.strip(),
-                        }
-                    )
-            pager = soup.find("div", class_="pager")
-            next_page = pager.find_all("a")[-1] if pager else None
-            if next_page and next_page.text == ">>":
-                page_number += 1
-            else:
-                break
+            if page:
+                soup = BeautifulSoup(page.content, "html.parser")
+                reviews = soup.find_all("div", class_="review-text1")
+                ratings = soup.find_all("div", class_="user-reviews-movie-rating")
+                genres_element = soup.find("span", class_="genres")
+                genres = (
+                    [a.text for a in genres_element.find_all("a")] if genres_element else []
+                )
+                for review, rating in zip(reviews, ratings):
+                    review_text = remove_accents(review.text.strip())
+                    if review_text:
+                        print(
+                            f"Show ID: {show}, Review: {review_text}, Rating: {rating.text.strip()}"
+                        )
+                        data.append(
+                            {
+                                "metadata": {
+                                    "source": "FilmAffinity",
+                                    "timestamp": datetime.now().isoformat(),
+                                    "format": "JSON",
+                                    "tags": ["review"] + genres,
+                                },
+                                "Show ID": show,
+                                "Review": review_text,
+                                "Rating": rating.text.strip(),
+                            }
+                        )
+                pager = soup.find("div", class_="pager")
+                next_page = pager.find_all("a")[-1] if pager else None
+                if next_page and next_page.text == ">>":
+                    page_number += 1
+                else:
+                    break
     return data
 
 
